@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to OzCastle</title>
+    <title>welcome to ozcastle</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
     
@@ -27,11 +27,11 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* 5.5초 후 인트로 전체 사라짐 */
-            animation: fadeOutOverlay 0.5s ease-in-out 5s forwards;
+            /* 수정됨: 배경 효과(5초)가 다 끝날 때까지 기다렸다가 사라짐 (총 9초 후) */
+            animation: fadeOutOverlay 1s ease-in-out 9s forwards;
         }
 
-        /* 배경 이미지 설정 (기존 intro.png 사용) */
+        /* 배경 이미지 설정 */
         .intro-bg {
             position: absolute;
             top: 0;
@@ -44,8 +44,8 @@
             /* 초기: 어둡고 뿌옇고 확대됨 */
             filter: brightness(0.4) blur(10px);
             transform: scale(1.2);
-            /* 3.5초 딜레이 후 선명해짐 */
-            animation: revealBackground 1.5s ease-in-out 3.5s forwards;
+            /* 수정됨: 3.5초 대기 후, 5초 동안 천천히 선명해짐 */
+            animation: revealBackground 5s ease-in-out 3.5s forwards;
         }
 
         /* 텍스트 컨테이너 */
