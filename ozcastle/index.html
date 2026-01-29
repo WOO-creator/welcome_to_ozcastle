@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>welcome to ozcastle</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
@@ -14,102 +15,124 @@
         body { margin: 0; padding: 0; background-color: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace; color: #0f0; }
 
         /* =========================================
-           2. [1단계] 로그인 오버레이 (가장 최상단)
+           2. [NEW] 전용 로그인 화면
            ========================================= */
         #login-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 20000; /* 최상위 레벨 */
             background-color: #000;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 1s ease-in-out;
-        }
-
-        /* [NEW] 프리뷰 이미지 스타일 */
-        .preview-img {
-            width: 150px; /* 작게 보여주기 */
-            height: auto;
-            border: 1px solid #0f0;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
-            margin-bottom: 25px;
-            opacity: 0.8;
-            border-radius: 4px;
-        }
-
-        .login-box {
-            display: flex; flex-direction: column; align-items: center; gap: 15px;
-            border: 1px solid #0f0; padding: 40px;
-            box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
-            background: rgba(0, 20, 0, 0.9);
-        }
-
-        #pass-input {
-            background: #000; border: 1px solid #0f0; color: #0f0;
-            padding: 10px; font-family: 'Courier New', Courier, monospace;
-            font-size: 1.2rem; text-align: center; width: 200px; outline: none;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
-        }
-        #pass-input:focus { box-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
-
-        #access-btn {
-            background: rgba(0, 255, 0, 0.1); border: 1px solid #0f0; color: #0f0;
-            padding: 8px 20px; cursor: pointer; font-weight: bold;
-            font-family: 'Courier New', Courier, monospace; transition: 0.3s;
-        }
-        #access-btn:hover { background: #0f0; color: #000; }
-
-        #error-msg {
-            color: #f00; font-weight: bold; height: 20px;
-            text-shadow: 0 0 5px #f00; opacity: 0; transition: opacity 0.2s;
-        }
-        #success-msg {
-            color: #0f0; font-weight: bold; height: 20px; display: none;
-            text-shadow: 0 0 10px #0f0; letter-spacing: 2px;
-        }
-
-        .shake { animation: shake 0.5s; }
-        @keyframes shake {
-            0% { transform: translateX(0); } 25% { transform: translateX(-10px); }
-            50% { transform: translateX(10px); } 75% { transform: translateX(-10px); }
-            100% { transform: translateX(0); }
-        }
-
-        /* =========================================
-           3. [2단계] 인트로 이미지 레이어 (중간 단계)
-           ========================================= */
-        #intro-layer {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 9999;
-            background-color: #111;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transform-origin: left center;
-            transition: transform 1.5s cubic-bezier(0.645, 0.045, 0.355, 1.000);
-            cursor: pointer;
-            box-shadow: 10px 0 30px rgba(0,255,0,0.2);
+            transition: opacity 1s ease; /* 사라질 때 페이드 효과 */
         }
 
-        #intro-layer img {
-            max-width: 60%; height: auto;
-            border: 2px solid #0f0; box-shadow: 0 0 20px #0f0;
-            border-radius: 5px; margin-bottom: 30px; pointer-events: none;
+        /* 로그인 배경 (intro.png 프리뷰) */
+        .login-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('intro.png'); /* 프리뷰 이미지 */
+            background-size: cover; background-position: center;
+            opacity: 0.3; /* 은은하게 보이도록 설정 */
+            filter: blur(5px) grayscale(50%); /* 약간 흐리고 흑백 느낌 */
+            z-index: -1;
         }
 
-        .click-guide {
-            font-size: 1.2rem; color: #0f0; text-shadow: 0 0 10px #0f0;
-            animation: blink 2s infinite; letter-spacing: 2px;
+        /* 로그인 박스 스타일 */
+        .login-box {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #0f0;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+            width: 300px;
         }
 
-        .page-turned {
-            transform: perspective(2000px) rotateY(-110deg);
-            pointer-events: none;
+        .login-title { font-size: 1.5rem; margin-bottom: 20px; text-shadow: 0 0 10px #0f0; }
+
+        input[type="password"] {
+            background: transparent; border: none; border-bottom: 2px solid #0f0;
+            color: #fff; font-size: 1.2rem; text-align: center; width: 80%;
+            font-family: 'Courier New', Courier, monospace; outline: none; margin-bottom: 20px;
         }
+
+        /* 로그인 버튼 (WHASSUP) */
+        #login-btn {
+            background: #0f0; color: #000; border: none; padding: 10px 20px;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer;
+            font-family: 'Courier New', Courier, monospace;
+            transition: 0.2s; width: 100%;
+        }
+        #login-btn:hover { background: #fff; box-shadow: 0 0 15px #fff; }
+
+        /* 결과 메시지 (CMON~ / DAMN~) */
+        #login-msg {
+            margin-top: 15px; font-size: 1.2rem; font-weight: bold; height: 20px;
+        }
+        .msg-success { color: #0ff; text-shadow: 0 0 10px #0ff; }
+        .msg-fail { color: #f00; text-shadow: 0 0 10px #f00; animation: shake 0.3s; }
+
+        @keyframes shake {
+            0% { transform: translateX(0); } 25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); }
+        }
+
 
         /* =========================================
-           4. 뮤직 플레이어 UI (ozcastle)
+           3. 인트로 화면 (로그인 후 실행됨)
+           ========================================= */
+        #intro-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9999; background-color: #000;
+            display: none; /* 로그인 전에는 숨김 */
+            justify-content: center; align-items: center;
+        }
+        
+        /* 인트로 애니메이션이 활성화되면 적용될 클래스 */
+        #intro-overlay.active {
+            display: flex;
+            /* 10.5초 후 사라짐 */
+            animation: fadeOutOverlay 1s ease-in-out 10.5s forwards;
+        }
+
+        .intro-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('intro.png');
+            background-size: cover; background-position: center;
+            filter: brightness(0.4) blur(10px); transform: scale(1.2);
+            opacity: 0; /* 시작 전엔 안 보임 */
+        }
+
+        /* 활성화 시 배경 효과 */
+        #intro-overlay.active .intro-bg {
+            opacity: 1;
+            /* 3.5초 대기 -> 4초 효과 */
+            animation: revealBackground 4s ease-in-out 3.5s forwards;
+        }
+
+        .intro-content { position: relative; z-index: 10; text-align: center; }
+
+        .typewriter {
+            font-family: 'Courier New', Courier, monospace; color: #f0e68c;
+            font-size: 2.5rem; font-weight: bold; white-space: nowrap; overflow: hidden;
+            border-right: 3px solid #f0e68c; width: 0;
+        }
+        
+        /* 활성화 시 텍스트 효과 */
+        #intro-overlay.active .typewriter {
+            animation: 
+                typing 3s steps(22) forwards,
+                blinkCursor 0.7s step-end infinite,
+                fadeOutText 0.5s ease-in-out 4.5s forwards;
+        }
+
+        @keyframes typing { from { width: 0; } to { width: 100%; } }
+        @keyframes blinkCursor { from, to { border-color: transparent; } 50% { border-color: #f0e68c; } }
+        @keyframes revealBackground { to { filter: brightness(1) blur(0); transform: scale(1); } }
+        @keyframes fadeOutText { to { opacity: 0; } }
+        @keyframes fadeOutOverlay { to { opacity: 0; visibility: hidden; } }
+        @media (max-width: 768px) { .typewriter { font-size: 1.5rem; } }
+
+        /* =========================================
+           4. 메인 UI (ozcastle)
            ========================================= */
         #canvas-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; }
         
@@ -136,37 +159,19 @@
 
         #smart-dock {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            width: 60px; height: 60px;
-            background: rgba(0, 10, 0, 0.9);
-            border: 2px solid #0f0;
-            border-radius: 50px;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 20;
-            display: none;
-            backdrop-filter: blur(10px);
+            width: 60px; height: 60px; background: rgba(0, 10, 0, 0.9);
+            border: 2px solid #0f0; border-radius: 50px; box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+            overflow: hidden; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 20;
+            display: none; backdrop-filter: blur(10px);
         }
-        #smart-dock.expanded {
-            width: 400px; height: 180px; border-radius: 20px; border-color: #fff; box-shadow: 0 0 50px rgba(0, 255, 0, 0.2);
-        }
-        #dock-toggle {
-            position: absolute; bottom: 0; left: 0; width: 60px; height: 60px;
-            display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 22; font-size: 24px;
-        }
+        #smart-dock.expanded { width: 400px; height: 180px; border-radius: 20px; border-color: #fff; box-shadow: 0 0 50px rgba(0, 255, 0, 0.2); }
+        #dock-toggle { position: absolute; bottom: 0; left: 0; width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 22; font-size: 24px; }
         #dock-icon { transition: 0.3s; }
         #smart-dock.expanded #dock-icon { opacity: 0; }
-
-        #controls-inner {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            padding: 20px; box-sizing: border-box;
-            display: flex; flex-direction: column; justify-content: center;
-            opacity: 0; transition: opacity 0.2s; pointer-events: none;
-        }
+        #controls-inner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
         #smart-dock.expanded #controls-inner { opacity: 1; pointer-events: auto; transition-delay: 0.1s; }
         #close-btn { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; color: #666; transition: 0.2s; }
         #close-btn:hover { color: #fff; }
-
         .control-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         button.cyber-btn { background: transparent; border: 1px solid #0f0; color: #0f0; padding: 8px 16px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 4px; }
         button.cyber-btn:hover { background: #0f0; color: #000; }
@@ -180,22 +185,20 @@
 <body>
 
     <div id="login-screen">
-        <h2 style="margin-bottom: 10px; letter-spacing: 5px; text-shadow: 0 0 20px #0f0;">SECURITY CHECK</h2>
-        
-        <img src="intro.png" class="preview-img" alt="Card Preview">
-
+        <div class="login-bg"></div>
         <div class="login-box">
-            <div id="error-msg">DAMN~</div>
-            <div id="success-msg">CMON~</div>
-            
+            <div class="login-title">SYSTEM LOGIN</div>
             <input type="password" id="pass-input" placeholder="PASSWORD">
-            <button id="access-btn" onclick="checkPassword()">WHASSUP</button>
+            <button id="login-btn">WHASSUP</button>
+            <div id="login-msg"></div>
         </div>
     </div>
 
-    <div id="intro-layer" onclick="flipPage()">
-        <img src="intro.png" alt="Intro Image">
-        <p class="click-guide">>>> CLICK TO ENTER <<<</p>
+    <div id="intro-overlay">
+        <div class="intro-bg"></div>
+        <div class="intro-content">
+            <h1 class="typewriter">welcome to ozcastle...</h1>
+        </div>
     </div>
 
     <div id="progress-bar-container"><div id="progress-bar"></div></div>
@@ -214,6 +217,7 @@
         </div>
         <div id="controls-inner">
             <div id="close-btn" onclick="toggleDock()">✕</div>
+            
             <div class="control-row" style="margin-top: 10px;">
                 <button id="play-btn" class="cyber-btn">|| PAUSE</button>
                 <span id="current-time" style="font-size: 14px; color: #fff;">00:00</span>
@@ -231,59 +235,58 @@
 
     <script>
         // ==========================================
-        // 1. LOGIN & INTRO LOGIC
+        // [1] 로그인 로직 (비밀번호: 0202)
         // ==========================================
-        const CORRECT_PASSWORD = "1234"; 
+        const loginScreen = document.getElementById('login-screen');
+        const introOverlay = document.getElementById('intro-overlay');
+        const passInput = document.getElementById('pass-input');
+        const loginBtn = document.getElementById('login-btn');
+        const loginMsg = document.getElementById('login-msg');
 
-        function checkPassword() {
-            const inputField = document.getElementById('pass-input');
-            const errorMsg = document.getElementById('error-msg');
-            const successMsg = document.getElementById('success-msg');
-            const loginScreen = document.getElementById('login-screen');
+        // 이미 로그인했는지 확인
+        if (sessionStorage.getItem('oz_access') === 'granted') {
+            loginScreen.style.display = 'none'; // 이미 로그인했으면 숨김
+            // 바로 인트로 대신 메인 화면 보여줄지, 인트로 다시 보여줄지 선택 가능
+            // 여기서는 바로 메인으로 (인트로 건너뛰기)
+        }
 
-            if (inputField.value === CORRECT_PASSWORD) {
-                // 성공 처리
-                errorMsg.style.display = 'none';
-                successMsg.style.display = 'block';
-                inputField.style.borderColor = '#fff';
+        function tryLogin() {
+            const password = passInput.value;
+            if (password === "0202") { // 비밀번호 일치
+                loginMsg.innerText = "CMON~";
+                loginMsg.className = "msg-success";
+                sessionStorage.setItem('oz_access', 'granted');
                 
+                // 1초 뒤 로그인 화면 사라지고 인트로 시작
                 setTimeout(() => {
                     loginScreen.style.opacity = 0;
                     setTimeout(() => {
                         loginScreen.style.display = 'none';
+                        // 인트로 애니메이션 시작 (class active 추가)
+                        introOverlay.classList.add('active');
                     }, 1000);
                 }, 800);
 
-            } else {
-                // 실패 처리
-                errorMsg.style.opacity = 1;
-                inputField.classList.add('shake'); 
-                inputField.value = '';
-                setTimeout(() => {
-                    inputField.classList.remove('shake');
-                    errorMsg.style.opacity = 0;
-                }, 1000);
+            } else { // 비밀번호 불일치
+                loginMsg.innerText = "DAMN~";
+                loginMsg.className = "msg-fail";
+                passInput.value = "";
+                passInput.focus();
             }
         }
 
-        function flipPage() {
-            const intro = document.getElementById('intro-layer');
-            intro.classList.add('page-turned');
-            setTimeout(() => {
-                intro.style.display = 'none';
-            }, 1500);
-        }
-
-        document.getElementById('pass-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') checkPassword();
+        loginBtn.addEventListener('click', tryLogin);
+        passInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') tryLogin();
         });
-        
+
+
+        // ==========================================
+        // [2] 기존 로직 (Dock, Shader, Audio)
+        // ==========================================
         const smartDock = document.getElementById('smart-dock');
         function toggleDock() { smartDock.classList.toggle('expanded'); }
 
-        // ==========================================
-        // 2. 15-LAYER SHADER CODE
-        // ==========================================
         const vertShader = `attribute vec3 aPosition; attribute vec2 aTexCoord; varying vec2 vTexCoord; void main() { vTexCoord = aTexCoord; vec4 positionVec4 = vec4(aPosition, 1.0); positionVec4.xy = positionVec4.xy * 2.0 - 1.0; gl_Position = positionVec4; }`;
 
         const fragShader = `
@@ -305,19 +308,17 @@
                 float glitchBase = u_bass * (0.1 + phase3 * 0.3 + phase4 * 0.5); 
                 float shake = (random(vec2(u_time)) - 0.5) * glitchBase; uv.x += step(0.95, sin(uv.y * 40.0 + u_time * 15.0)) * glitchBase * 0.4; uv.x += shake;
 
-                // L1: Fog
+                // L1 ~ L3
                 float fog = noise(uv * 3.0 + u_time * 0.2); vec3 col1 = vec3(0.0, 0.15 + sin(u_time)*0.05, 0.05) * fog;
                 vec3 col11 = (vec3(0.0, 0.05, 0.2) + vec3(sin(u_time*0.5)*0.02)) * (1.0 - length(vTexCoord - 0.5));
                 float rain = step(0.9, random(vec2(floor(uv.x * 60.0), floor(uv.y * 15.0 + u_time * 8.0)))); vec3 col4 = vec3(0.0, 0.9, 0.0) * rain * 0.4;
                 vec3 col5 = vec3(random(uv * u_time * 20.0)) * u_treble * 0.3;
 
-                // L2 (Phase 2)
                 vec2 gridUV = uv; gridUV.y += 0.5; gridUV /= abs(uv.y + 0.2); float grid = step(0.95, fract(gridUV.x * 5.0 + u_time)) + step(0.95, fract(gridUV.y * 5.0)); grid *= smoothstep(0.0, 0.5, abs(uv.y)); vec3 col2 = vec3(0.0, 0.8, 0.2) * grid * u_mid * phase2;
                 vec2 hexUV = uv; hexUV -= 0.5; hexUV = rotate2d(u_time * 0.1) * hexUV; hexUV += 0.5; hexUV = hexUV * 5.0; hexUV.x *= 1.1547; float hex = step(0.4, 0.5 - hexDist(fract(hexUV) - 0.5)); vec3 col6 = vec3(0.0, 0.3, 0.1) * hex * (0.2 + u_bass * 0.5) * phase2;
                 float waveY = uv.y - 0.5; float waveLine = sin(uv.x * 20.0 + u_time * 5.0) * u_bass * 0.2; vec3 col13 = vec3(0.5, 0.8, 1.0) * smoothstep(0.01, 0.0, abs(waveY - waveLine)) * phase2;
                 float dist = length(vTexCoord - 0.5); float breath = sin(u_time * 2.0) * 0.05; vec3 col9 = vec3(0.2, 1.0, 1.0) * smoothstep(0.01, 0.0, abs(dist - (0.3 + u_mid * 0.2 + breath))) * phase2;
 
-                // L3 (Phase 3)
                 vec2 triPos = uv - 0.5; triPos = rotate2d(u_time * -0.3) * triPos; triPos += 0.5; vec2 triUV = fract(triPos * 4.0) - 0.5; float tri = step(0.3, 0.4 - triDist(triUV)); vec3 triColor = mix(vec3(0.8, 0.0, 0.4), vec3(0.0, 0.8, 0.8), sin(u_time)*0.5+0.5); vec3 col14 = triColor * tri * u_mid * 0.5 * phase3;
                 vec2 blockUV = floor(uv * 10.0); float blockTrigger = step(0.8, random(blockUV + floor(u_time * 10.0))) * step(0.5, u_bass); vec3 col7 = vec3(0.6, 1.0, 0.6) * blockTrigger * 0.6 * phase3;
                 vec2 centerUV = vTexCoord - 0.5; float angle = u_time * 0.5; float s = sin(angle); float c = cos(angle); vec2 rotUV = vec2(centerUV.x * c - centerUV.y * s, centerUV.x * s + centerUV.y * c); float crosshair = (step(0.995, 1.0 - abs(rotUV.x)) + step(0.995, 1.0 - abs(rotUV.y))) * step(dist, 0.4); vec3 col8 = vec3(0.8, 1.0, 0.8) * crosshair * 0.8 * phase3;
@@ -326,21 +327,27 @@
                 // L4 (Phase 4)
                 float wave = sin(dist * 40.0 - u_time * 15.0); 
                 vec3 col3 = vec3(0.5, 1.0, 0.5) * smoothstep(0.9, 0.95, abs(wave)) * u_bass * phase4;
-                
                 float angleV = atan(centerUV.y, centerUV.x); float spiral = sin(angleV * 10.0 + dist * 20.0 - u_time * 10.0); vec3 col15 = vec3(0.2, 0.0, 0.5) * smoothstep(0.2, 0.8, spiral) * u_treble * phase4;
                 vec3 col10 = vec3(1.0) * step(0.85, u_bass) * step(0.5, sin(u_time * 50.0)) * 0.8 * phase4;
 
                 // FINAL MIX
                 vec3 finalColor = col1 + col11 + col4 + col5 + col2 + col6 + col13 + col9 + col14 + col7 + col8 + col12 + col3 + col15 + col10;
-                float splitPower = 0.5 + phase4 * 0.5; float rOffset = u_bass * 0.06 * splitPower; float bOffset = -u_bass * 0.06 * splitPower; finalColor.r += noise(uv + vec2(rOffset, 0.0)) * u_bass * 0.5; finalColor.b += noise(uv + vec2(bOffset, 0.0)) * u_bass * 0.5;
+                
+                // Rainbow Overload at 90%
+                float rainbowMix = smoothstep(0.9, 0.95, u_progress); 
+                if(rainbowMix > 0.0) {
+                    vec3 changingColor = 0.5 + 0.5 * cos(u_time * 5.0 + uv.xyx * 3.0 + vec3(0, 2, 4));
+                    finalColor = mix(finalColor, finalColor * changingColor * 4.0, rainbowMix * 0.8 * (0.5 + u_bass));
+                }
+
+                float splitPower = 0.5 + phase4 * 0.5; float rOffset = u_bass * 0.06 * splitPower; float bOffset = -u_bass * 0.06 * splitPower; 
+                finalColor.r += noise(uv + vec2(rOffset, 0.0)) * u_bass * 0.5; 
+                finalColor.b += noise(uv + vec2(bOffset, 0.0)) * u_bass * 0.5;
                 finalColor = pow(finalColor, vec3(1.1)) * 1.4;
                 gl_FragColor = vec4(finalColor, 1.0);
             }
         `;
 
-        // ==========================================
-        // 3. P5.JS LOGIC
-        // ==========================================
         let theShader, song, fft;
         let isPlaying = false;
         let isLoaded = false;
@@ -348,8 +355,6 @@
         const startScreen = document.getElementById('start-screen');
         const enterBtn = document.getElementById('enter-btn');
         const statusText = document.getElementById('status-text');
-        
-        const dock = document.getElementById('smart-dock');
         const playBtn = document.getElementById('play-btn');
         const volSlider = document.getElementById('vol-slider');
         const progSlider = document.getElementById('prog-slider');
@@ -422,7 +427,7 @@
                 startScreen.style.opacity = 0;
                 setTimeout(() => { 
                     startScreen.style.display = 'none'; 
-                    dock.style.display = 'block'; 
+                    document.getElementById('smart-dock').style.display = 'block'; 
                 }, 800);
                 song.play();
                 isPlaying = true;
