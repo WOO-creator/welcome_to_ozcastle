@@ -2,8 +2,11 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    
+    <meta name="robots" content="noindex, nofollow">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to OzCastle</title>
+    <title>welcome to ozcastle</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
     
@@ -14,7 +17,7 @@
         body { margin: 0; padding: 0; background-color: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace; color: #0f0; }
 
         /* =========================================
-           2. 새로운 인트로 (Typewriter + Blur/Zoom)
+           2. 인트로 (Typewriter + Blur/Zoom) - 4초 효과 + 3초 대기
            ========================================= */
         #intro-overlay {
             position: fixed;
@@ -22,78 +25,59 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 9999; /* 최상단 배치 */
+            z-index: 9999;
             background-color: #000;
             display: flex;
             justify-content: center;
             align-items: center;
-            
-            /* [수정됨] 타이밍 계산:
-               3.5s(시작딜레이) + 4s(효과지속) + 3s(대기시간) = 10.5s
-               총 10.5초 후에 인트로 막이 걷힙니다. */
+            /* 10.5초 후 사라짐 */
             animation: fadeOutOverlay 1s ease-in-out 10.5s forwards;
         }
 
-        /* 배경 이미지 설정 */
         .intro-bg {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('intro.png'); /* 이미지 파일명 확인 */
+            background-image: url('intro.png');
             background-size: cover;
             background-position: center;
-            /* 초기: 어둡고 뿌옇고 확대됨 */
             filter: brightness(0.4) blur(10px);
             transform: scale(1.2);
-            
-            /* [수정됨] 3.5초 기다린 후, 4초 동안 서서히 선명해짐 */
+            /* 3.5초 대기 -> 4초 효과 */
             animation: revealBackground 4s ease-in-out 3.5s forwards;
         }
 
-        /* 텍스트 컨테이너 */
-        .intro-content {
-            position: relative;
-            z-index: 10;
-            text-align: center;
-        }
+        .intro-content { position: relative; z-index: 10; text-align: center; }
 
-        /* 타자기 텍스트 효과 */
         .typewriter {
             font-family: 'Courier New', Courier, monospace;
-            color: #f0e68c; /* 금색 느낌 */
+            color: #f0e68c;
             font-size: 2.5rem;
             font-weight: bold;
             white-space: nowrap;
             overflow: hidden;
-            border-right: 3px solid #f0e68c; /* 커서 */
+            border-right: 3px solid #f0e68c;
             width: 0;
-            
-            /* 타이핑(3초) -> 커서깜빡임 -> 텍스트 사라짐(4.5초 딜레이) */
             animation: 
                 typing 3s steps(22) forwards,
                 blinkCursor 0.7s step-end infinite,
                 fadeOutText 0.5s ease-in-out 4.5s forwards;
         }
 
-        /* --- 인트로 애니메이션 키프레임 --- */
         @keyframes typing { from { width: 0; } to { width: 100%; } }
         @keyframes blinkCursor { from, to { border-color: transparent; } 50% { border-color: #f0e68c; } }
         @keyframes revealBackground { to { filter: brightness(1) blur(0); transform: scale(1); } }
         @keyframes fadeOutText { to { opacity: 0; } }
         @keyframes fadeOutOverlay { to { opacity: 0; visibility: hidden; } }
-
-        /* 모바일 대응 */
         @media (max-width: 768px) { .typewriter { font-size: 1.5rem; } }
 
-
         /* =========================================
-           3. 뮤직 플레이어 UI (OzCastle) - 기존 유지
+           3. UI (ozcastle)
            ========================================= */
         #canvas-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; }
         
-        /* [UI] 로딩 & 시작 화면 */
         #start-screen {
             pointer-events: auto; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 5, 10, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 50;
@@ -112,82 +96,59 @@
         .start-btn.active { opacity: 1; pointer-events: auto; box-shadow: 0 0 50px #0f0; background: #000; border-color: #fff; }
         .start-btn:hover { background: #0f0; color: #000; }
 
-        /* [UI] 상단 진행바 */
         #progress-bar-container { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.1); z-index: 15; }
         #progress-bar { width: 0%; height: 100%; background: #0f0; box-shadow: 0 0 10px #0f0; transition: width 0.1s linear; }
 
-        /* [UI] 스마트 독 (Smart Dock) */
         #smart-dock {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            width: 60px; height: 60px; /* 초기 크기: 도트 */
-            background: rgba(0, 10, 0, 0.9);
-            border: 2px solid #0f0;
-            border-radius: 50px; /* 원형 */
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
-            overflow: hidden; /* 내용 숨김 */
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 쫀득한 애니메이션 */
-            z-index: 20;
-            display: none; /* 시작 전엔 숨김 */
-            backdrop-filter: blur(10px);
+            width: 60px; height: 60px; background: rgba(0, 10, 0, 0.9);
+            border: 2px solid #0f0; border-radius: 50px; box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+            overflow: hidden; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 20;
+            display: none; backdrop-filter: blur(10px);
         }
-
-        /* 확장되었을 때 스타일 */
-        #smart-dock.expanded {
-            width: 400px; height: 180px; /* 창 크기 */
-            border-radius: 20px; /* 사각형 */
-            border-color: #fff;
-            box-shadow: 0 0 50px rgba(0, 255, 0, 0.2);
-        }
-
-        /* 도트 아이콘 (메뉴 버튼) */
-        #dock-toggle {
-            position: absolute; bottom: 0; left: 0; width: 60px; height: 60px;
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; z-index: 22; font-size: 24px;
-        }
+        #smart-dock.expanded { width: 400px; height: 180px; border-radius: 20px; border-color: #fff; box-shadow: 0 0 50px rgba(0, 255, 0, 0.2); }
+        #dock-toggle { position: absolute; bottom: 0; left: 0; width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 22; font-size: 24px; }
         #dock-icon { transition: 0.3s; }
-        #smart-dock.expanded #dock-icon { opacity: 0; } /* 확장되면 아이콘 숨김 */
-
-        /* 컨트롤 패널 내부 */
-        #controls-inner {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            padding: 20px; box-sizing: border-box;
-            display: flex; flex-direction: column; justify-content: center;
-            opacity: 0; transition: opacity 0.2s; pointer-events: none;
-        }
+        #smart-dock.expanded #dock-icon { opacity: 0; }
+        #controls-inner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
         #smart-dock.expanded #controls-inner { opacity: 1; pointer-events: auto; transition-delay: 0.1s; }
-
-        /* 닫기 버튼 */
-        #close-btn {
-            position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; color: #666; transition: 0.2s;
-        }
+        #close-btn { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; color: #666; transition: 0.2s; }
         #close-btn:hover { color: #fff; }
-
-        /* 내부 요소 스타일 */
         .control-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        button.cyber-btn { 
-            background: transparent; border: 1px solid #0f0; color: #0f0; padding: 8px 16px; 
-            font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 4px; 
-        }
+        button.cyber-btn { background: transparent; border: 1px solid #0f0; color: #0f0; padding: 8px 16px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 4px; }
         button.cyber-btn:hover { background: #0f0; color: #000; }
-
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-thumb { 
-            -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; 
-            background: #0f0; margin-top: -5px; cursor: pointer; box-shadow: 0 0 10px #0f0; 
-        }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #0f0; margin-top: -5px; cursor: pointer; box-shadow: 0 0 10px #0f0; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; background: #333; }
-        
         .label { font-size: 12px; color: #888; margin-right: 10px; }
     </style>
 </head>
 <body>
 
+    <script>
+        (function() {
+            if (sessionStorage.getItem('oz_access') === 'granted') return;
+            const password = prompt("ACCESS CODE REQUIRED\n(wassup)", "");
+            if (password === "0202") { 
+                sessionStorage.setItem('oz_access', 'granted');
+            } else {
+                document.body.innerHTML = `
+                    <div style="height:100vh; display:flex; justify-content:center; align-items:center; flex-direction:column; background:black; color:#f00; font-family:'Courier New';">
+                        <h1 style="font-size:3em; margin:0;">ACCESS DENIED</h1>
+                        <p>SYSTEM LOCKED</p>
+                        <button onclick="location.reload()" style="margin-top:20px; padding:10px 20px; border:1px solid #0f0; background:black; color:#0f0; cursor:pointer;">RETRY</button>
+                    </div>
+                `;
+                throw new Error("damn~");
+            }
+        })();
+    </script>
+
     <div id="intro-overlay">
         <div class="intro-bg"></div>
         <div class="intro-content">
-            <h1 class="typewriter">Welcome to Oz Castle...</h1>
+            <h1 class="typewriter">welcome to ozcastle...</h1>
         </div>
     </div>
 
@@ -224,17 +185,14 @@
     </div>
 
     <script>
-        // ==========================================
-        // 1. DOCK TOGGLE LOGIC
-        // ==========================================
         const smartDock = document.getElementById('smart-dock');
         function toggleDock() { smartDock.classList.toggle('expanded'); }
 
-        // ==========================================
-        // 2. 15-LAYER SHADER CODE (Original)
-        // ==========================================
         const vertShader = `attribute vec3 aPosition; attribute vec2 aTexCoord; varying vec2 vTexCoord; void main() { vTexCoord = aTexCoord; vec4 positionVec4 = vec4(aPosition, 1.0); positionVec4.xy = positionVec4.xy * 2.0 - 1.0; gl_Position = positionVec4; }`;
 
+        // ==========================================
+        // [수정됨] FRAGMENT SHADER (색상 폭주 효과 추가)
+        // ==========================================
         const fragShader = `
             #ifdef GL_ES
             precision mediump float;
@@ -254,19 +212,17 @@
                 float glitchBase = u_bass * (0.1 + phase3 * 0.3 + phase4 * 0.5); 
                 float shake = (random(vec2(u_time)) - 0.5) * glitchBase; uv.x += step(0.95, sin(uv.y * 40.0 + u_time * 15.0)) * glitchBase * 0.4; uv.x += shake;
 
-                // L1: Fog
+                // L1 ~ L3 (기존 코드 유지)
                 float fog = noise(uv * 3.0 + u_time * 0.2); vec3 col1 = vec3(0.0, 0.15 + sin(u_time)*0.05, 0.05) * fog;
                 vec3 col11 = (vec3(0.0, 0.05, 0.2) + vec3(sin(u_time*0.5)*0.02)) * (1.0 - length(vTexCoord - 0.5));
                 float rain = step(0.9, random(vec2(floor(uv.x * 60.0), floor(uv.y * 15.0 + u_time * 8.0)))); vec3 col4 = vec3(0.0, 0.9, 0.0) * rain * 0.4;
                 vec3 col5 = vec3(random(uv * u_time * 20.0)) * u_treble * 0.3;
 
-                // L2 (Phase 2)
                 vec2 gridUV = uv; gridUV.y += 0.5; gridUV /= abs(uv.y + 0.2); float grid = step(0.95, fract(gridUV.x * 5.0 + u_time)) + step(0.95, fract(gridUV.y * 5.0)); grid *= smoothstep(0.0, 0.5, abs(uv.y)); vec3 col2 = vec3(0.0, 0.8, 0.2) * grid * u_mid * phase2;
                 vec2 hexUV = uv; hexUV -= 0.5; hexUV = rotate2d(u_time * 0.1) * hexUV; hexUV += 0.5; hexUV = hexUV * 5.0; hexUV.x *= 1.1547; float hex = step(0.4, 0.5 - hexDist(fract(hexUV) - 0.5)); vec3 col6 = vec3(0.0, 0.3, 0.1) * hex * (0.2 + u_bass * 0.5) * phase2;
                 float waveY = uv.y - 0.5; float waveLine = sin(uv.x * 20.0 + u_time * 5.0) * u_bass * 0.2; vec3 col13 = vec3(0.5, 0.8, 1.0) * smoothstep(0.01, 0.0, abs(waveY - waveLine)) * phase2;
                 float dist = length(vTexCoord - 0.5); float breath = sin(u_time * 2.0) * 0.05; vec3 col9 = vec3(0.2, 1.0, 1.0) * smoothstep(0.01, 0.0, abs(dist - (0.3 + u_mid * 0.2 + breath))) * phase2;
 
-                // L3 (Phase 3)
                 vec2 triPos = uv - 0.5; triPos = rotate2d(u_time * -0.3) * triPos; triPos += 0.5; vec2 triUV = fract(triPos * 4.0) - 0.5; float tri = step(0.3, 0.4 - triDist(triUV)); vec3 triColor = mix(vec3(0.8, 0.0, 0.4), vec3(0.0, 0.8, 0.8), sin(u_time)*0.5+0.5); vec3 col14 = triColor * tri * u_mid * 0.5 * phase3;
                 vec2 blockUV = floor(uv * 10.0); float blockTrigger = step(0.8, random(blockUV + floor(u_time * 10.0))) * step(0.5, u_bass); vec3 col7 = vec3(0.6, 1.0, 0.6) * blockTrigger * 0.6 * phase3;
                 vec2 centerUV = vTexCoord - 0.5; float angle = u_time * 0.5; float s = sin(angle); float c = cos(angle); vec2 rotUV = vec2(centerUV.x * c - centerUV.y * s, centerUV.x * s + centerUV.y * c); float crosshair = (step(0.995, 1.0 - abs(rotUV.x)) + step(0.995, 1.0 - abs(rotUV.y))) * step(dist, 0.4); vec3 col8 = vec3(0.8, 1.0, 0.8) * crosshair * 0.8 * phase3;
@@ -275,21 +231,30 @@
                 // L4 (Phase 4)
                 float wave = sin(dist * 40.0 - u_time * 15.0); 
                 vec3 col3 = vec3(0.5, 1.0, 0.5) * smoothstep(0.9, 0.95, abs(wave)) * u_bass * phase4;
-                
                 float angleV = atan(centerUV.y, centerUV.x); float spiral = sin(angleV * 10.0 + dist * 20.0 - u_time * 10.0); vec3 col15 = vec3(0.2, 0.0, 0.5) * smoothstep(0.2, 0.8, spiral) * u_treble * phase4;
                 vec3 col10 = vec3(1.0) * step(0.85, u_bass) * step(0.5, sin(u_time * 50.0)) * 0.8 * phase4;
 
                 // FINAL MIX
                 vec3 finalColor = col1 + col11 + col4 + col5 + col2 + col6 + col13 + col9 + col14 + col7 + col8 + col12 + col3 + col15 + col10;
-                float splitPower = 0.5 + phase4 * 0.5; float rOffset = u_bass * 0.06 * splitPower; float bOffset = -u_bass * 0.06 * splitPower; finalColor.r += noise(uv + vec2(rOffset, 0.0)) * u_bass * 0.5; finalColor.b += noise(uv + vec2(bOffset, 0.0)) * u_bass * 0.5;
+                
+                // [NEW EFFECT] Rainbow Overload at 90% Progress
+                // 진행도 0.9부터 무지개빛 폭주 시작
+                float rainbowMix = smoothstep(0.9, 0.95, u_progress); 
+                if(rainbowMix > 0.0) {
+                    // 시간과 위치에 따라 색이 변하는 팔레트 생성 (Cosine Palette)
+                    vec3 changingColor = 0.5 + 0.5 * cos(u_time * 5.0 + uv.xyx * 3.0 + vec3(0, 2, 4));
+                    // 기존 색상에 비트(Bass)에 반응하는 강렬한 색상을 섞음
+                    finalColor = mix(finalColor, finalColor * changingColor * 4.0, rainbowMix * 0.8 * (0.5 + u_bass));
+                }
+
+                float splitPower = 0.5 + phase4 * 0.5; float rOffset = u_bass * 0.06 * splitPower; float bOffset = -u_bass * 0.06 * splitPower; 
+                finalColor.r += noise(uv + vec2(rOffset, 0.0)) * u_bass * 0.5; 
+                finalColor.b += noise(uv + vec2(bOffset, 0.0)) * u_bass * 0.5;
                 finalColor = pow(finalColor, vec3(1.1)) * 1.4;
                 gl_FragColor = vec4(finalColor, 1.0);
             }
         `;
 
-        // ==========================================
-        // 3. P5.JS LOGIC
-        // ==========================================
         let theShader, song, fft;
         let isPlaying = false;
         let isLoaded = false;
@@ -297,8 +262,6 @@
         const startScreen = document.getElementById('start-screen');
         const enterBtn = document.getElementById('enter-btn');
         const statusText = document.getElementById('status-text');
-        
-        const dock = document.getElementById('smart-dock');
         const playBtn = document.getElementById('play-btn');
         const volSlider = document.getElementById('vol-slider');
         const progSlider = document.getElementById('prog-slider');
@@ -306,7 +269,6 @@
         const progressBar = document.getElementById('progress-bar');
 
         function preload() {
-            // ⚠️ [음악 파일 필요] homie.mp3 파일이 같은 폴더에 있어야 합니다
             song = loadSound('homie.mp3', 
                 () => { 
                     isLoaded = true;
@@ -372,7 +334,7 @@
                 startScreen.style.opacity = 0;
                 setTimeout(() => { 
                     startScreen.style.display = 'none'; 
-                    dock.style.display = 'block'; 
+                    document.getElementById('smart-dock').style.display = 'block'; 
                 }, 800);
                 song.play();
                 isPlaying = true;
