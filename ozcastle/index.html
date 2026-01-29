@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to OzCastle</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
+    
+    <style>
+        /* =========================================
+           1. 공통 기본 설정
+           ========================================= */
+        body { margin: 0; padding: 0; background-color: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace; color: #0f0; }
+
+        /* =========================================
+           2. 인트로 페이지 (Page Flip Effect)
+           ========================================= */
+        #intro-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999; /* 최상단 배치 */
+            
+            /* 3D 회전 설정 */
+            transform-origin: left center;
+            transition: transform 1.5s cubic-bezier(0.645, 0.045, 0.355, 1.000);
+            background-color: #111;
+            cursor: pointer;
+            
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 10px 0 30px rgba(0,255,0,0.2);
+        }
+
+        /* 인트로 이미지 스타일 */
+        #intro-layer img {
+            max-width: 60%;
+            height: auto;
+            border: 2px solid #0f0;
+            box-shadow: 0 0 20px #0f0;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            pointer-events: none;
+        }
+
+        /* 인트로 텍스트 깜빡임 */
+        .click-guide {
+            font-size: 1.2rem;
+            color: #0f0;
+            text-shadow: 0 0 10px #0f0;
+            animation: blink 2s infinite;
+            letter-spacing: 2px;
+        }
+
+        /* 책장이 넘어갔을 때 적용될 클래스 */
+        .page-turned {
+            transform: perspective(2000px) rotateY(-110deg);
+            pointer-events: none;
+        }
+
+        /* =========================================
+           3. 뮤직 플레이어 UI (OzCastle)
+           ========================================= */
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; }
+        
+        /* [UI] 로딩 & 시작 화면 */
+        #start-screen {
+            pointer-events: auto; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 5, 10, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 50;
+            transition: opacity 0.8s;
+        }
+        .title-text { font-size: 4em; font-weight: 900; letter-spacing: 5px; color: #0f0; text-shadow: 0 0 30px #0f0; margin-bottom: 0; }
+        .sub-title { font-size: 1em; letter-spacing: 8px; color: #fff; animation: blink 2s infinite; text-transform: lowercase; margin-top: 10px; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        
+        .start-btn {
+            margin-top: 50px;
+            border: 2px solid #0f0; background: rgba(0, 20, 0, 0.6); padding: 15px 40px;
+            font-size: 1.2em; font-weight: bold; color: #0f0; cursor: pointer; text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); transition: 0.3s; opacity: 0.5; pointer-events: none; border-radius: 30px;
+        }
+        .start-btn.active { opacity: 1; pointer-events: auto; box-shadow: 0 0 50px #0f0; background: #000; border-color: #fff; }
+        .start-btn:hover { background: #0f0; color: #000; }
+
+        /* [UI] 상단 진행바 */
+        #progress-bar-container { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.1); z-index: 15; }
+        #progress-bar { width: 0%; height: 100%; background: #0f0; box-shadow: 0 0 10px #0f0; transition: width 0.1s linear; }
+
+        /* [UI] 스마트 독 (Smart Dock) */
+        #smart-dock {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            width: 60px; height: 60px; /* 초기 크기: 도트 */
+            background: rgba(0, 10, 0, 0.9);
+            border: 2px solid #0f0;
+            border-radius: 50px; /* 원형 */
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+            overflow: hidden; /* 내용 숨김 */
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 쫀득한 애니메이션 */
+            z-index: 20;
+            display: none; /* 시작 전엔 숨김 */
+            backdrop-filter: blur(10px);
+        }
+
+        /* 확장되었을 때 스타일 */
+        #smart-dock.expanded {
+            width: 400px; height: 180px; /* 창 크기 */
+            border-radius: 20px; /* 사각형 */
+            border-color: #fff;
+            box-shadow: 0 0 50px rgba(0, 255, 0, 0.2);
+        }
+
+        /* 도트 아이콘 (메뉴 버튼) */
+        #dock-toggle {
+            position: absolute; bottom: 0; left: 0; width: 60px; height: 60px;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 22; font-size: 24px;
+        }
+        #dock-icon { transition: 0.3s; }
+        #smart-dock.expanded #dock-icon { opacity: 0; } /* 확장되면 아이콘 숨김 */
+
+        /* 컨트롤 패널 내부 */
+        #controls-inner {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            padding: 20px; box-sizing: border-box;
+            display: flex; flex-direction: column; justify-content: center;
+            opacity: 0; transition: opacity 0.2s; pointer-events: none;
+        }
+        #smart-dock.expanded #controls-inner { opacity: 1; pointer-events: auto; transition-delay: 0.1s; }
+
+        /* 닫기 버튼 */
+        #close-btn {
+            position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; color: #666; transition: 0.2s;
+        }
+        #close-btn:hover { color: #fff; }
+
+        /* 내부 요소 스타일 */
+        .control-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        button.cyber-btn { 
+            background: transparent; border: 1px solid #0f0; color: #0f0; padding: 8px 16px; 
+            font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 4px; 
+        }
+        button.cyber-btn:hover { background: #0f0; color: #000; }
+
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-thumb { 
+            -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; 
+            background: #0f0; margin-top: -5px; cursor: pointer; box-shadow: 0 0 10px #0f0; 
+        }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; background: #333; }
+        
+        .label { font-size: 12px; color: #888; margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="intro-layer" onclick="flipPage()">
+        <img src="intro.png" alt="Intro Image">
+        <p class="click-guide">>>> CLICK TO ACCESS SYSTEM <<<</p>
+    </div>
+
+    <div id="progress-bar-container"><div id="progress-bar"></div></div>
+    <div id="canvas-container"></div>
+    
+    <div id="start-screen">
+        <h1 class="title-text">HOMIE</h1>
+        <p class="sub-title">welcome to ozcastle</p>
+        <button id="enter-btn" class="start-btn">LOADING SYSTEM...</button>
+        <p id="status-text" style="margin-top:20px; color:#444; font-size: 0.8em;">INITIALIZING 15 LAYERS...</p>
+    </div>
+
+    <div id="smart-dock">
+        <div id="dock-toggle" onclick="toggleDock()">
+            <span id="dock-icon">🎛️</span>
+        </div>
+        <div id="controls-inner">
+            <div id="close-btn" onclick="toggleDock()">✕</div>
+            
+            <div class="control-row" style="margin-top: 10px;">
+                <button id="play-btn" class="cyber-btn">|| PAUSE</button>
+                <span id="current-time" style="font-size: 14px; color: #fff;">00:00</span>
+            </div>
+            <div class="control-row">
+                <span class="label">VOL</span>
+                <input type="range" id="vol-slider" min="0" max="1" step="0.01" value="0.8">
+            </div>
+            <div class="control-row">
+                <span class="label">SEEK</span>
+                <input type="range" id="prog-slider" min="0" max="100" value="0" step="0.1">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. INTRO PAGE FLIP LOGIC (소리 제거됨)
+        // ==========================================
+        function flipPage() {
+            const intro = document.getElementById('intro-layer');
+            intro.classList.add('page-turned');
+            
+            // 소리 재생 코드 제거됨 (Visual Effect Only)
+            
+            // 애니메이션이 끝나면 DOM에서 완전히 치우기 (선택사항)
+            setTimeout(() => {
+                intro.style.display = 'none';
+            }, 1500);
+        }
+
+        const smartDock = document.getElementById('smart-dock');
+        function toggleDock() { smartDock.classList.toggle('expanded'); }
+
+        // ==========================================
+        // 2. 15-LAYER SHADER CODE (Original)
+        // ==========================================
+        const vertShader = `attribute vec3 aPosition; attribute vec2 aTexCoord; varying vec2 vTexCoord; void main() { vTexCoord = aTexCoord; vec4 positionVec4 = vec4(aPosition, 1.0); positionVec4.xy = positionVec4.xy * 2.0 - 1.0; gl_Position = positionVec4; }`;
+
+        const fragShader = `
+            #ifdef GL_ES
+            precision mediump float;
+            #endif
+            varying vec2 vTexCoord; uniform float u_time; uniform float u_bass; uniform float u_mid; uniform float u_treble; uniform float u_progress;
+            
+            mat2 rotate2d(float _angle){ return mat2(cos(_angle),-sin(_angle), sin(_angle),cos(_angle)); }
+            float random (vec2 st) { return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123); }
+            float noise (in vec2 st) { vec2 i = floor(st); vec2 f = fract(st); float a = random(i); float b = random(i + vec2(1.0, 0.0)); float c = random(i + vec2(0.0, 1.0)); float d = random(i + vec2(1.0, 1.0)); vec2 u = f * f * (3.0 - 2.0 * f); return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y; }
+            float hexDist(vec2 p) { p = abs(p); return max(p.x, dot(p, vec2(0.5, 0.866025))); }
+            float triDist(vec2 p) { p = p * 2.0; return max(abs(p.x) * 0.866025 + p.y * 0.5, -p.y * 0.5); }
+
+            void main() {
+                vec2 uv = vTexCoord;
+                float phase2 = smoothstep(0.2, 0.3, u_progress); float phase3 = smoothstep(0.5, 0.6, u_progress); float phase4 = smoothstep(0.8, 0.85, u_progress);
+                
+                float glitchBase = u_bass * (0.1 + phase3 * 0.3 + phase4 * 0.5); 
+                float shake = (random(vec2(u_time)) - 0.5) * glitchBase; uv.x += step(0.95, sin(uv.y * 40.0 + u_time * 15.0)) * glitchBase * 0.4; uv.x += shake;
+
+                // L1: Fog
+                float fog = noise(uv * 3.0 + u_time * 0.2); vec3 col1 = vec3(0.0, 0.15 + sin(u_time)*0.05, 0.05) * fog;
+                vec3 col11 = (vec3(0.0, 0.05, 0.2) + vec3(sin(u_time*0.5)*0.02)) * (1.0 - length(vTexCoord - 0.5));
+                float rain = step(0.9, random(vec2(floor(uv.x * 60.0), floor(uv.y * 15.0 + u_time * 8.0)))); vec3 col4 = vec3(0.0, 0.9, 0.0) * rain * 0.4;
+                vec3 col5 = vec3(random(uv * u_time * 20.0)) * u_treble * 0.3;
+
+                // L2 (Phase 2)
+                vec2 gridUV = uv; gridUV.y += 0.5; gridUV /= abs(uv.y + 0.2); float grid = step(0.95, fract(gridUV.x * 5.0 + u_time)) + step(0.95, fract(gridUV.y * 5.0)); grid *= smoothstep(0.0, 0.5, abs(uv.y)); vec3 col2 = vec3(0.0, 0.8, 0.2) * grid * u_mid * phase2;
+                vec2 hexUV = uv; hexUV -= 0.5; hexUV = rotate2d(u_time * 0.1) * hexUV; hexUV += 0.5; hexUV = hexUV * 5.0; hexUV.x *= 1.1547; float hex = step(0.4, 0.5 - hexDist(fract(hexUV) - 0.5)); vec3 col6 = vec3(0.0, 0.3, 0.1) * hex * (0.2 + u_bass * 0.5) * phase2;
+                float waveY = uv.y - 0.5; float waveLine = sin(uv.x * 20.0 + u_time * 5.0) * u_bass * 0.2; vec3 col13 = vec3(0.5, 0.8, 1.0) * smoothstep(0.01, 0.0, abs(waveY - waveLine)) * phase2;
+                float dist = length(vTexCoord - 0.5); float breath = sin(u_time * 2.0) * 0.05; vec3 col9 = vec3(0.2, 1.0, 1.0) * smoothstep(0.01, 0.0, abs(dist - (0.3 + u_mid * 0.2 + breath))) * phase2;
+
+                // L3 (Phase 3)
+                vec2 triPos = uv - 0.5; triPos = rotate2d(u_time * -0.3) * triPos; triPos += 0.5; vec2 triUV = fract(triPos * 4.0) - 0.5; float tri = step(0.3, 0.4 - triDist(triUV)); vec3 triColor = mix(vec3(0.8, 0.0, 0.4), vec3(0.0, 0.8, 0.8), sin(u_time)*0.5+0.5); vec3 col14 = triColor * tri * u_mid * 0.5 * phase3;
+                vec2 blockUV = floor(uv * 10.0); float blockTrigger = step(0.8, random(blockUV + floor(u_time * 10.0))) * step(0.5, u_bass); vec3 col7 = vec3(0.6, 1.0, 0.6) * blockTrigger * 0.6 * phase3;
+                vec2 centerUV = vTexCoord - 0.5; float angle = u_time * 0.5; float s = sin(angle); float c = cos(angle); vec2 rotUV = vec2(centerUV.x * c - centerUV.y * s, centerUV.x * s + centerUV.y * c); float crosshair = (step(0.995, 1.0 - abs(rotUV.x)) + step(0.995, 1.0 - abs(rotUV.y))) * step(dist, 0.4); vec3 col8 = vec3(0.8, 1.0, 0.8) * crosshair * 0.8 * phase3;
+                float checker = step(0.5, fract(uv.x * 10.0 + u_time)) * step(0.5, fract(uv.y * 10.0)); vec3 col12 = vec3(1.0) * checker * step(0.7, u_bass) * 0.5 * phase3;
+
+                // L4 (Phase 4)
+                float wave = sin(dist * 40.0 - u_time * 15.0); 
+                vec3 col3 = vec3(0.5, 1.0, 0.5) * smoothstep(0.9, 0.95, abs(wave)) * u_bass * phase4;
+                
+                float angleV = atan(centerUV.y, centerUV.x); float spiral = sin(angleV * 10.0 + dist * 20.0 - u_time * 10.0); vec3 col15 = vec3(0.2, 0.0, 0.5) * smoothstep(0.2, 0.8, spiral) * u_treble * phase4;
+                vec3 col10 = vec3(1.0) * step(0.85, u_bass) * step(0.5, sin(u_time * 50.0)) * 0.8 * phase4;
+
+                // FINAL MIX
+                vec3 finalColor = col1 + col11 + col4 + col5 + col2 + col6 + col13 + col9 + col14 + col7 + col8 + col12 + col3 + col15 + col10;
+                float splitPower = 0.5 + phase4 * 0.5; float rOffset = u_bass * 0.06 * splitPower; float bOffset = -u_bass * 0.06 * splitPower; finalColor.r += noise(uv + vec2(rOffset, 0.0)) * u_bass * 0.5; finalColor.b += noise(uv + vec2(bOffset, 0.0)) * u_bass * 0.5;
+                finalColor = pow(finalColor, vec3(1.1)) * 1.4;
+                gl_FragColor = vec4(finalColor, 1.0);
+            }
+        `;
+
+        // ==========================================
+        // 3. P5.JS LOGIC
+        // ==========================================
+        let theShader, song, fft;
+        let isPlaying = false;
+        let isLoaded = false;
+
+        const startScreen = document.getElementById('start-screen');
+        const enterBtn = document.getElementById('enter-btn');
+        const statusText = document.getElementById('status-text');
+        
+        const dock = document.getElementById('smart-dock');
+        const playBtn = document.getElementById('play-btn');
+        const volSlider = document.getElementById('vol-slider');
+        const progSlider = document.getElementById('prog-slider');
+        const currentTimeSpan = document.getElementById('current-time');
+        const progressBar = document.getElementById('progress-bar');
+
+        function preload() {
+            // ⚠️ [음악 파일 필요] homie.mp3 파일이 같은 폴더에 있어야 합니다
+            song = loadSound('homie.mp3', 
+                () => { 
+                    isLoaded = true;
+                    enterBtn.innerText = "START";
+                    enterBtn.classList.add('active');
+                    statusText.innerText = "SYSTEM READY";
+                    statusText.style.color = "#0f0";
+                },
+                (err) => { 
+                    statusText.innerHTML = "ERROR: 'homie.mp3' NOT FOUND";
+                    statusText.style.color = "#f00";
+                    enterBtn.innerText = "FAIL";
+                }
+            );
+        }
+
+        function setup() {
+            let canvas = createCanvas(windowWidth, windowHeight, WEBGL);
+            canvas.parent('canvas-container');
+            noStroke();
+            theShader = createShader(vertShader, fragShader);
+            shader(theShader);
+            fft = new p5.FFT(0.5, 512);
+        }
+
+        function draw() {
+            let bass=0, mid=0, treble=0;
+            let progress = 0;
+
+            if (song && isPlaying && isLoaded) {
+                fft.analyze();
+                let bassE = fft.getEnergy("bass");
+                let midE = fft.getEnergy("mid"); 
+                let trebleE = fft.getEnergy("treble");
+                bass = map(bassE, 20, 180, 0, 1.0, true); 
+                mid = map(midE, 20, 150, 0, 1.0, true);
+                treble = map(trebleE, 10, 150, 0, 1.0, true);
+
+                if (song.duration() > 0) {
+                    progress = song.currentTime() / song.duration();
+                }
+                progressBar.style.width = (progress * 100) + "%";
+            } else {
+                bass = (sin(millis()/500) * 0.5 + 0.5) * 0.2;
+                mid = 0.1; treble = 0.05;
+            }
+
+            theShader.setUniform('u_time', millis() / 1000.0);
+            theShader.setUniform('u_resolution', [width, height]);
+            theShader.setUniform('u_bass', bass);
+            theShader.setUniform('u_mid', mid);
+            theShader.setUniform('u_treble', treble);
+            theShader.setUniform('u_progress', progress);
+
+            rect(-width/2, -height/2, width, height);
+            updateUI();
+        }
+
+        function windowResized() { resizeCanvas(windowWidth, windowHeight); }
+
+        enterBtn.addEventListener('click', () => {
+            if (isLoaded) {
+                startScreen.style.opacity = 0;
+                setTimeout(() => { 
+                    startScreen.style.display = 'none'; 
+                    dock.style.display = 'block'; 
+                }, 800);
+                song.play();
+                isPlaying = true;
+            }
+        });
+
+        playBtn.addEventListener('click', () => {
+            if (!song) return;
+            if (song.isPlaying()) { song.pause(); playBtn.innerText = "▶ PLAY"; isPlaying = false; } 
+            else { song.play(); playBtn.innerText = "|| PAUSE"; isPlaying = true; }
+        });
+
+        volSlider.addEventListener('input', () => { if(song) song.setVolume(parseFloat(volSlider.value)); });
+        progSlider.addEventListener('input', () => {
+            if(song) {
+                let val = parseFloat(progSlider.value);
+                song.jump(map(val, 0, 100, 0, song.duration()));
+                if(!isPlaying) { song.play(); isPlaying = true; playBtn.innerText="|| PAUSE"; }
+            }
+        });
+
+        function updateUI() {
+            if (song && isPlaying && !progSlider.matches(':active')) {
+                progSlider.value = map(song.currentTime(), 0, song.duration(), 0, 100);
+                let t = song.currentTime();
+                currentTimeSpan.innerText = nf(Math.floor(t/60),2) + ":" + nf(Math.floor(t%60),2);
+            }
+        }
+    </script>
+</body>
+</html>
