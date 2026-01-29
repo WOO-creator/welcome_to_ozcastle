@@ -15,115 +15,64 @@
         body { margin: 0; padding: 0; background-color: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace; color: #0f0; }
 
         /* =========================================
-           2. [NEW] 전용 로그인 화면
+           2. 로그인 화면
            ========================================= */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 20000; /* 최상위 레벨 */
-            background-color: #000;
+            z-index: 20000; background-color: #000;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 1s ease; /* 사라질 때 페이드 효과 */
+            transition: opacity 1s ease;
         }
-
-        /* 로그인 배경 (intro.png 프리뷰) */
         .login-bg {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('intro.png'); /* 프리뷰 이미지 */
-            background-size: cover; background-position: center;
-            opacity: 0.3; /* 은은하게 보이도록 설정 */
-            filter: blur(5px) grayscale(50%); /* 약간 흐리고 흑백 느낌 */
-            z-index: -1;
+            background-image: url('intro.png'); background-size: cover; background-position: center;
+            opacity: 0.3; filter: blur(5px) grayscale(50%); z-index: -1;
         }
-
-        /* 로그인 박스 스타일 */
         .login-box {
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #0f0;
-            padding: 40px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
-            width: 300px;
+            background: rgba(0, 0, 0, 0.8); border: 2px solid #0f0; padding: 40px;
+            border-radius: 10px; text-align: center; box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); width: 300px;
         }
-
         .login-title { font-size: 1.5rem; margin-bottom: 20px; text-shadow: 0 0 10px #0f0; }
-
         input[type="password"] {
             background: transparent; border: none; border-bottom: 2px solid #0f0;
             color: #fff; font-size: 1.2rem; text-align: center; width: 80%;
             font-family: 'Courier New', Courier, monospace; outline: none; margin-bottom: 20px;
         }
-
-        /* 로그인 버튼 (WHASSUP) */
         #login-btn {
             background: #0f0; color: #000; border: none; padding: 10px 20px;
             font-size: 1.2rem; font-weight: bold; cursor: pointer;
-            font-family: 'Courier New', Courier, monospace;
-            transition: 0.2s; width: 100%;
+            font-family: 'Courier New', Courier, monospace; transition: 0.2s; width: 100%;
         }
         #login-btn:hover { background: #fff; box-shadow: 0 0 15px #fff; }
-
-        /* 결과 메시지 (CMON~ / DAMN~) */
-        #login-msg {
-            margin-top: 15px; font-size: 1.2rem; font-weight: bold; height: 20px;
-        }
+        #login-msg { margin-top: 15px; font-size: 1.2rem; font-weight: bold; height: 20px; }
         .msg-success { color: #0ff; text-shadow: 0 0 10px #0ff; }
         .msg-fail { color: #f00; text-shadow: 0 0 10px #f00; animation: shake 0.3s; }
-
-        @keyframes shake {
-            0% { transform: translateX(0); } 25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); }
-        }
-
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
 
         /* =========================================
-           3. 인트로 화면 (로그인 후 실행됨)
+           3. 인트로 화면
            ========================================= */
         #intro-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 9999; background-color: #000;
-            display: none; /* 로그인 전에는 숨김 */
-            justify-content: center; align-items: center;
+            display: none; justify-content: center; align-items: center;
         }
-        
-        /* 인트로 애니메이션이 활성화되면 적용될 클래스 */
-        #intro-overlay.active {
-            display: flex;
-            /* 10.5초 후 사라짐 */
-            animation: fadeOutOverlay 1s ease-in-out 10.5s forwards;
-        }
-
+        #intro-overlay.active { display: flex; animation: fadeOutOverlay 1s ease-in-out 10.5s forwards; }
         .intro-bg {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('intro.png');
-            background-size: cover; background-position: center;
-            filter: brightness(0.4) blur(10px); transform: scale(1.2);
-            opacity: 0; /* 시작 전엔 안 보임 */
+            background-image: url('intro.png'); background-size: cover; background-position: center;
+            filter: brightness(0.4) blur(10px); transform: scale(1.2); opacity: 0;
         }
-
-        /* 활성화 시 배경 효과 */
-        #intro-overlay.active .intro-bg {
-            opacity: 1;
-            /* 3.5초 대기 -> 4초 효과 */
-            animation: revealBackground 4s ease-in-out 3.5s forwards;
-        }
-
+        #intro-overlay.active .intro-bg { opacity: 1; animation: revealBackground 4s ease-in-out 3.5s forwards; }
         .intro-content { position: relative; z-index: 10; text-align: center; }
-
         .typewriter {
             font-family: 'Courier New', Courier, monospace; color: #f0e68c;
             font-size: 2.5rem; font-weight: bold; white-space: nowrap; overflow: hidden;
             border-right: 3px solid #f0e68c; width: 0;
         }
-        
-        /* 활성화 시 텍스트 효과 */
         #intro-overlay.active .typewriter {
-            animation: 
-                typing 3s steps(22) forwards,
-                blinkCursor 0.7s step-end infinite,
-                fadeOutText 0.5s ease-in-out 4.5s forwards;
+            animation: typing 3s steps(22) forwards, blinkCursor 0.7s step-end infinite, fadeOutText 0.5s ease-in-out 4.5s forwards;
         }
-
         @keyframes typing { from { width: 0; } to { width: 100%; } }
         @keyframes blinkCursor { from, to { border-color: transparent; } 50% { border-color: #f0e68c; } }
         @keyframes revealBackground { to { filter: brightness(1) blur(0); transform: scale(1); } }
@@ -132,10 +81,9 @@
         @media (max-width: 768px) { .typewriter { font-size: 1.5rem; } }
 
         /* =========================================
-           4. 메인 UI (ozcastle)
+           4. 메인 UI
            ========================================= */
         #canvas-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; }
-        
         #start-screen {
             pointer-events: auto; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 5, 10, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 50;
@@ -144,19 +92,15 @@
         .title-text { font-size: 4em; font-weight: 900; letter-spacing: 5px; color: #0f0; text-shadow: 0 0 30px #0f0; margin-bottom: 0; }
         .sub-title { font-size: 1em; letter-spacing: 8px; color: #fff; animation: blink 2s infinite; text-transform: lowercase; margin-top: 10px; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        
         .start-btn {
-            margin-top: 50px;
-            border: 2px solid #0f0; background: rgba(0, 20, 0, 0.6); padding: 15px 40px;
+            margin-top: 50px; border: 2px solid #0f0; background: rgba(0, 20, 0, 0.6); padding: 15px 40px;
             font-size: 1.2em; font-weight: bold; color: #0f0; cursor: pointer; text-transform: uppercase;
             box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); transition: 0.3s; opacity: 0.5; pointer-events: none; border-radius: 30px;
         }
         .start-btn.active { opacity: 1; pointer-events: auto; box-shadow: 0 0 50px #0f0; background: #000; border-color: #fff; }
         .start-btn:hover { background: #0f0; color: #000; }
-
         #progress-bar-container { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.1); z-index: 15; }
         #progress-bar { width: 0%; height: 100%; background: #0f0; box-shadow: 0 0 10px #0f0; transition: width 0.1s linear; }
-
         #smart-dock {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             width: 60px; height: 60px; background: rgba(0, 10, 0, 0.9);
@@ -235,7 +179,7 @@
 
     <script>
         // ==========================================
-        // [1] 로그인 로직 (비밀번호: 0202)
+        // 로그인 로직 (새로고침 시 항상 리셋)
         // ==========================================
         const loginScreen = document.getElementById('login-screen');
         const introOverlay = document.getElementById('intro-overlay');
@@ -243,31 +187,21 @@
         const loginBtn = document.getElementById('login-btn');
         const loginMsg = document.getElementById('login-msg');
 
-        // 이미 로그인했는지 확인
-        if (sessionStorage.getItem('oz_access') === 'granted') {
-            loginScreen.style.display = 'none'; // 이미 로그인했으면 숨김
-            // 바로 인트로 대신 메인 화면 보여줄지, 인트로 다시 보여줄지 선택 가능
-            // 여기서는 바로 메인으로 (인트로 건너뛰기)
-        }
+        sessionStorage.removeItem('oz_access');
 
         function tryLogin() {
             const password = passInput.value;
-            if (password === "0202") { // 비밀번호 일치
+            if (password === "1234") { 
                 loginMsg.innerText = "CMON~";
                 loginMsg.className = "msg-success";
-                sessionStorage.setItem('oz_access', 'granted');
-                
-                // 1초 뒤 로그인 화면 사라지고 인트로 시작
                 setTimeout(() => {
                     loginScreen.style.opacity = 0;
                     setTimeout(() => {
                         loginScreen.style.display = 'none';
-                        // 인트로 애니메이션 시작 (class active 추가)
                         introOverlay.classList.add('active');
                     }, 1000);
                 }, 800);
-
-            } else { // 비밀번호 불일치
+            } else {
                 loginMsg.innerText = "DAMN~";
                 loginMsg.className = "msg-fail";
                 passInput.value = "";
@@ -282,7 +216,7 @@
 
 
         // ==========================================
-        // [2] 기존 로직 (Dock, Shader, Audio)
+        // 메인 로직 (Visualizer)
         // ==========================================
         const smartDock = document.getElementById('smart-dock');
         function toggleDock() { smartDock.classList.toggle('expanded'); }
@@ -305,8 +239,20 @@
                 vec2 uv = vTexCoord;
                 float phase2 = smoothstep(0.2, 0.3, u_progress); float phase3 = smoothstep(0.5, 0.6, u_progress); float phase4 = smoothstep(0.8, 0.85, u_progress);
                 
+                // [NEW] Climax Trigger: 85% ~ 98% (Before end)
+                // 0.85에서 서서히 시작하고, 0.98에서 서서히 사라짐
+                float climaxTrigger = smoothstep(0.85, 0.88, u_progress) * (1.0 - smoothstep(0.98, 0.99, u_progress));
+
                 float glitchBase = u_bass * (0.1 + phase3 * 0.3 + phase4 * 0.5); 
-                float shake = (random(vec2(u_time)) - 0.5) * glitchBase; uv.x += step(0.95, sin(uv.y * 40.0 + u_time * 15.0)) * glitchBase * 0.4; uv.x += shake;
+                float shake = (random(vec2(u_time)) - 0.5) * glitchBase; 
+                
+                // [NEW] Global Screen Shake Effect at Climax
+                // 클라이맥스일 때 전체 화면을 강하게 흔듬 (베이스에 반응)
+                float heavyShake = (random(vec2(u_time * 10.0)) - 0.5) * 0.15 * climaxTrigger * u_bass;
+                
+                uv.x += step(0.95, sin(uv.y * 40.0 + u_time * 15.0)) * glitchBase * 0.4; 
+                uv.x += shake;
+                uv += heavyShake; // Apply Global Shake
 
                 // L1 ~ L3
                 float fog = noise(uv * 3.0 + u_time * 0.2); vec3 col1 = vec3(0.0, 0.15 + sin(u_time)*0.05, 0.05) * fog;
@@ -330,14 +276,13 @@
                 float angleV = atan(centerUV.y, centerUV.x); float spiral = sin(angleV * 10.0 + dist * 20.0 - u_time * 10.0); vec3 col15 = vec3(0.2, 0.0, 0.5) * smoothstep(0.2, 0.8, spiral) * u_treble * phase4;
                 vec3 col10 = vec3(1.0) * step(0.85, u_bass) * step(0.5, sin(u_time * 50.0)) * 0.8 * phase4;
 
-                // FINAL MIX
                 vec3 finalColor = col1 + col11 + col4 + col5 + col2 + col6 + col13 + col9 + col14 + col7 + col8 + col12 + col3 + col15 + col10;
                 
-                // Rainbow Overload at 90%
-                float rainbowMix = smoothstep(0.9, 0.95, u_progress); 
-                if(rainbowMix > 0.0) {
+                // [NEW] Rainbow Overload with Cut-off
+                // climaxTrigger 변수를 사용하여 85%에 켜고 98%에 끔
+                if(climaxTrigger > 0.0) {
                     vec3 changingColor = 0.5 + 0.5 * cos(u_time * 5.0 + uv.xyx * 3.0 + vec3(0, 2, 4));
-                    finalColor = mix(finalColor, finalColor * changingColor * 4.0, rainbowMix * 0.8 * (0.5 + u_bass));
+                    finalColor = mix(finalColor, finalColor * changingColor * 4.0, climaxTrigger * 0.8 * (0.5 + u_bass));
                 }
 
                 float splitPower = 0.5 + phase4 * 0.5; float rOffset = u_bass * 0.06 * splitPower; float bOffset = -u_bass * 0.06 * splitPower; 
